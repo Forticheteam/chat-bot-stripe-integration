@@ -8,15 +8,13 @@ services:
       - ./data/web/media_files:/app/mediafiles
     expose:
       - 5000
-    ports:
-      - 5000:5000
     # depends_on:
     #   - db
     command: bash -c "uwsgi --socket 0.0.0.0:8000 --protocol=http -w wsgi:app"
 
   nginx:
     image: nginx:1.15-alpine
-    # restart: unless-stopped
+    restart: unless-stopped
     volumes:
       - ./data/nginx:/etc/nginx/conf.d
       - ./data/certbot/conf:/etc/letsencrypt
