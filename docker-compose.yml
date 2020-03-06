@@ -1,0 +1,43 @@
+version: '3'
+services:
+  web:
+    build: .
+    volumes:
+      - ./app:/app
+      - ./data/web/static_files:/app/staticfiles
+      - ./data/web/media_files:/app/mediafiles
+    expose:
+      - 5000
+    ports:
+      - 5000:5000
+    # depends_on:
+    #   - db
+    command: bash -c "uwsgi --socket 0.0.0.0:8000 --protocol=http -w wsgi:app"
+
+  nginx:
+    image: nginx:1.15-alpine
+    # restart: unless-stopped
+    volumes:
+      - ./data/nginx:/etc/nginx/conf.d
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+      - ./data/certbot/log/nginx:/var/log/nginx
+      - ./data/web/static_files:/app/staticfiles
+      - ./data/web/media_files:/app/mediafiles
+
+    ports: 
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+  
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    depends_on:
+      - nginx
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"   
