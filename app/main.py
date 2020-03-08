@@ -8,7 +8,7 @@ def hello():
 
 @app.route("/api/echo", methods=['POST'])
 def create_share_link():
-    return json.loads(request.data)
+    return request.args
     
 
 
