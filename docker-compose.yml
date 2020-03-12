@@ -8,6 +8,12 @@ services:
       - ./data/web/media_files:/app/mediafiles
     expose:
       - 5000
+    environment:
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_API_VERSION=${STRIPE_API_VERSION}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - DOMAIN=${DOMAIN}
+
     # depends_on:
     #   - db
     command: bash -c "uwsgi --socket 0.0.0.0:5000 --protocol=http -w wsgi:app --py-autoreload 1"
