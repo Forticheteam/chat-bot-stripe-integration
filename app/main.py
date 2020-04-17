@@ -4,25 +4,8 @@ import os
 
 from flask import Flask, render_template, request, jsonify 
 
-stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
-stripe.api_version = os.getenv('STRIPE_API_VERSION')
-
-static_dir = str(os.path.abspath(os.path.join(__file__, "..", "./staticfiles")))
-app = Flask(__name__, static_folder=static_dir, template_folder=static_dir)
-
-@app.route("/")
-def hello():
-    return "Working for you... On Development!"
-
-@app.route("/api/echo", methods=['POST'])
-def create_share_link():
-    return request.args
-
-@app.route('/create-checkout-session', methods=['POST'])
-def create_checkout_session():
-
+def create_line_items(request):
     # Precios
-
     preciofinal_1 = request.args.get('preciofinal_1', 0)
     preciofinal_2 = request.args.get('preciofinal_2', 0)
     preciofinal_3 = request.args.get('preciofinal_3', 0)
@@ -43,10 +26,24 @@ def create_checkout_session():
     multiplicador_3 = request.args.get('multiplicador_3', '')
     multiplicador_4 = request.args.get('multiplicador_4', '')
     multiplicador_5 = request.args.get('multiplicador_5', '')
+    gastos_envios = request.args.get('gastos_envios', 0)
+
     name = request.args.get('name', '')
     protocolo = request.args.get('protocolo', '')
 
     line_items = []
+    line_items = [{'description': "Centrum",
+                            'name': "Vitamina C",
+                            'amount': 35,
+                            'currency': 'eur',
+                            'quantity': 2
+                            },
+                            {'description': "Centrum",
+                            'name': "Vitamina C",
+                            'amount': 35,
+                            'currency': 'eur',
+                            'quantity': 2
+                            }]
     if preciofinal_1:
         line_items.append({'description': marcaproducto_1,
                             'name': nombreproducto_1,
@@ -63,38 +60,73 @@ def create_checkout_session():
                             })
 
     if preciofinal_3:
-        line_items.append({'custom': {
-                                'description': marcaproducto_3,
-                                'images': None,
-                                'name': nombreproducto_3,
-                                },
+        line_items.append({'description': marcaproducto_3,
+                            'name': nombreproducto_3,
                             'amount': preciofinal_3,
                             'currency': 'eur',
-                            'quantity': multiplicador_3,
-                            'type': 'custom'})    
+                            'quantity': multiplicador_3
+                            })   
 
     if preciofinal_4:
-        line_items.append({'custom': {
-                                'description': marcaproducto_4,
-                                'images': None,
-                                'name': nombreproducto_4,
-                                },
+        line_items.append({'description': marcaproducto_4,
+                            'name': nombreproducto_4,
                             'amount': preciofinal_4,
                             'currency': 'eur',
-                            'quantity': multiplicador_4,
-                            'type': 'custom'})  
+                            'quantity': multiplicador_4
+                            }) 
 
     if preciofinal_5:
-        line_items.append({'custom': {
-                                'description': marcaproducto_5,
-                                'images': None,
-                                'name': nombreproducto_5,
-                                },
+        line_items.append({'description': marcaproducto_5,
+                            'name': nombreproducto_5,
                             'amount': preciofinal_5,
                             'currency': 'eur',
-                            'quantity': multiplicador_5,
-                            'type': 'custom'}) 
+                            'quantity': multiplicador_5
+                            })
 
+    if gastos_envios:
+         line_items.append({'description': "Gastos de Envios",
+                            'name': 'Envio',
+                            'amount': gastos_envios,
+                            'currency': 'eur',
+                            'quantity': 1
+                            })          
+
+    return {'nombre': name, 'protocolo': protocolo, 'line_items': line_items}
+
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+stripe.api_version = os.getenv('STRIPE_API_VERSION')
+
+static_dir = str(os.path.abspath(os.path.join(__file__, "..", "./staticfiles/templates")))
+app = Flask(__name__, static_folder=static_dir, template_folder=static_dir)
+app.config["TEMPLATES_AUTO_RELOAD"] = True
+
+@app.route('/')
+def hello():
+
+    data = create_line_items(request)
+    domain_url = os.getenv('DOMAIN')
+    total_lines = len(data['line_items'])
+
+    return render_template('index.html', **locals())
+
+@app.route('/config', methods=['GET'])
+def get_publishable_key():
+    return jsonify({
+      'publicKey': os.getenv('STRIPE_PUBLISHABLE_KEY'),
+      'basePrice': os.getenv('BASE_PRICE'),
+      'currency': "eur"
+    })
+
+
+@app.route("/api/echo", methods=['POST'])
+def create_share_link():
+    return request.args
+
+
+@app.route('/create-checkout-session', methods=['POST'])
+def create_checkout_session():
+
+    data = create_line_items(request)
     domain_url = os.getenv('DOMAIN')
 
     try:
@@ -111,13 +143,12 @@ def create_checkout_session():
         checkout_session = stripe.checkout.Session.create(
             success_url=domain_url + "/success.html?session_id={CHECKOUT_SESSION_ID}", \
             cancel_url=domain_url + "/canceled.html", \
-            metadata = {'name': name, 'protocolo': protocolo}, \
+            metadata = {'name': data['nombre'], 'protocolo': data['protocolo']}, \
             payment_method_types=["card"], \
-            line_items=line_items,
-            shipping_address_collection=['ES'],
+            line_items=data['line_items'],
 
         )
-        return jsonify({'linkinfo': domain_url + '/checkout_session?sessionId=' + checkout_session['id']})
+        return jsonify({'linkinfo': domain_url + '/checkout-session?sessionId=' + checkout_session['id']})
     except Exception as e:
         return jsonify(error=str(e)), 403
 
@@ -126,7 +157,8 @@ def create_checkout_session():
 def get_checkout_session():
     id = request.args.get('sessionId')
     checkout_session = stripe.checkout.Session.retrieve(id)
-    return jsonify(checkout_session)
+    # return jsonify(checkout_session)
+    return render_template("checkout.html", id=id)
 
 
 if __name__ == "__main__":

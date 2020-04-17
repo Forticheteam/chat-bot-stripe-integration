@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title data-i18n="title"></title>
+    <meta name="description" content="A demo of Stripe Payment Intents" />
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/global.css" />
+    <!-- Load Stripe.js on your website. -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <!-- Load translation files and libraries. -->
+    <script src="https://unpkg.com/i18next/i18next.js"></script>
+    <script src="https://unpkg.com/i18next-xhr-backend/i18nextXHRBackend.js"></script>
+    <script src="https://unpkg.com/i18next-browser-languagedetector/i18nextBrowserLanguageDetector.js"></script>
+  </head>
+  
+  <script>
+    fetch('/config')
+        .then(function (result) {
+            return result.json();
+        })
+        .then(function (json) {
+            window.config = json;
+            var stripe = Stripe(config.publicKey);
+            stripe
+                .redirectToCheckout({
+                    sessionId: '{{ id }}',
+                })
+                .then(handleResult);
+            });
+</script>
+
+  <body>
+    <div class="sr-root">
+      <div class="sr-main">
+        <header class="sr-header">
+            <h1>Prescriptum Plataforma de Pago</h1>
+        </header>
+        
+        <div id="error-message"></div>
+      </div>
+    </div>
+  </body>
+</html>

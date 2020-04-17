@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="css/normalize.css" />
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="js/script.js" defer></script>
+
+    <!-- Load translation files and libraries. -->
+    <script src="https://unpkg.com/i18next/i18next.js"></script>
+    <script src="https://unpkg.com/i18next-xhr-backend/i18nextXHRBackend.js"></script>
+    <script src="https://unpkg.com/i18next-browser-languagedetector/i18nextBrowserLanguageDetector.js"></script>
+    <script src="js/translation.js" defer></script>
+
+
+    <title>Bienvenidos a Prescriptvm</title>
+
+    <script>
+      var line_items = {{ data.line_items | tojson | safe}};
+    </script>
+  </head>
+  <body>
+
+  <div class="container">
+    <div class="row mx-auto" style="margin-top: 30px">
+      <div class="col-lg-12">
+        <div class="jumbotron">
+          <h1 class="display-4">Bienvenidos a Prescriptvm!</h1>
+          <hr class="my-4">
+          <p>Estas preparado para Pagar tu Protocolo?&nbsp;&nbsp;
+          </p>
+
+          <ul class="nav nav-tabs">
+            <li class="nav-item">
+              <a class="nav-link" data-toggle="tab" href="#home">1. Datos Personales</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-toggle="tab" href="#profile">2. PAGAR</a>
+            </li>
+          </ul>
+          <div id="myTabContent" class="tab-content">
+            <div class="tab-pane fade active show" id="home" style="background-color: white;padding: 30px;">
+              <form style="margin-top: 20px;">
+                <fieldset>
+                  <div class="form-group">
+                    <label for="exampleInputEmail1">Teléfono de Contacto</label>
+                    <input class="form-control" id="telefono" name="telefono" aria-describedby="emailHelp" placeholder="Ingrese su número telefónico">
+                    <small id="emailHelp" class="form-text text-muted">Esta información se mantendrá privada.</small>
+                  </div>
+                  <div class="form-group">
+                    <label for="exampleTextarea">Dirección de Envio</label>
+                    <textarea class="form-control" id="direccion" name="direccion"rows="3"></textarea>
+                  </div>
+              </form>            
+            </div>
+            <div class="tab-pane fade" id="profile">
+              <br><button type="button" class="btn btn-primary btn-lg">Pagar Ahora!</button>
+            </div>
+          </div>
+
+        </div>
+      </div>  
+      <div class="col-lg-2"></div>
+      <div class="col-lg-8 text-center">
+        <div class="row">
+            <div class="col-sm-6">
+              <div class="card text-white bg-success mb-3" style="max-width: 50rem;">
+                <div class="card-header">Terapeuta</div>
+                <div class="card-body">
+                  <h4 class="card-title">Eric</h4>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="card text-white bg-primary mb-3" style="max-width: 50rem;">
+                <div class="card-header">Protocolo</div>
+                <div class="card-body">
+                  <h4 class="card-title">adfafasfad</h4>
+                </div>
+              </div>
+            </div>
+        </div>
+
+
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Nombre</th>
+              <th scope="col">Marca</th>
+              <th scope="col">Cantidad</th>
+              <th scope="col">Precio Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {%for i in range(0, total_lines)%} 
+              <tr class="{% if i % 2 == 0 %}table-primary{% endif %} ">
+                <td>{{data.line_items[i].name}}</td>
+                <td>{{data.line_items[i].description}}</td>
+                <td>{{data.line_items[i].quantity}}</td>
+                <td>{{data.line_items[i].amount*data.line_items[i].quantity}} €</td>
+              </tr>
+            {%endfor%} 
+          </tbody>
+        </table> 
+      </div>
+    </div>
+  </div>
+    
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  </body>
+</html>
