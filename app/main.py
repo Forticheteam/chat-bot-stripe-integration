@@ -89,9 +89,11 @@ def create_line_items(request):
                             'amount': gastos_envios,
                             'currency': 'eur',
                             'quantity': 1
-                            })          
-
-    return {'nombre': name, 'protocolo': protocolo, 'line_items': line_items}
+                            })      
+    total = 0
+    total = sum([item['amount']*item['quantity'] for item in line_items])
+        
+    return {'name': name, 'protocolo': protocolo, 'line_items': line_items, 'total': total}
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 stripe.api_version = os.getenv('STRIPE_API_VERSION')
