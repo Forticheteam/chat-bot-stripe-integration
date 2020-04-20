@@ -22,13 +22,6 @@
 
     <title>Bienvenidos a Prescriptvm</title>
 
-    <script>
-      var line_items = {{ data.line_items | tojson | safe}};
-      var total = {{data.total}};
-      console.log(total);
-    </script>
-    <script src="js/script.js" defer></script>
-
   </head>
   <body>
 
@@ -62,6 +55,12 @@
                     <div class="form-group col-lg-4">
                       <label for="exampleInputEmail1">Teléfono de Contacto</label>
                       <input class="form-control" id="phone" name="phonenumber" aria-describedby="emailHelp" placeholder="Ingrese su número telefónico">
+                    </div>
+                  </div>                  
+                  <div class="row" style="margin-top: 5px;">
+                    <div class="form-group col-lg-12">
+                      <label for="exampleInputEmail1">Direccion</label>
+                      <input class="form-control" id="address" name="address" aria-describedby="emailHelp" placeholder="Ingrese Direccion">
                     </div>
                   </div>
                   <div class="row" style="margin-top: 5px;">
@@ -140,6 +139,13 @@
   </div>
     
 
+  <script>
+    var line_items = {{ data.line_items | tojson | safe}};
+    var total = {{data.total}};
+    var name = "{{data.name}}";
+    var protocolo = "{{data.protocolo}}";
+  </script>
+  <script src="js/script.js" defer></script>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>

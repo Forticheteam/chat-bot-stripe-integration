@@ -32,18 +32,18 @@ def create_line_items(request):
     protocolo = request.args.get('protocolo', '')
 
     line_items = []
-    line_items = [{'description': "Centrum",
-                            'name': "Vitamina C",
-                            'amount': 35,
-                            'currency': 'eur',
-                            'quantity': 2
-                            },
-                            {'description': "Centrum",
-                            'name': "Vitamina C",
-                            'amount': 35,
-                            'currency': 'eur',
-                            'quantity': 2
-                            }]
+    # line_items = [{'description': "Centrum",
+    #                         'name': "Vitamina C",
+    #                         'amount': 35,
+    #                         'currency': 'eur',
+    #                         'quantity': 2
+    #                         },
+    #                         {'description': "Centrum",
+    #                         'name': "Vitamina C",
+    #                         'amount': 35,
+    #                         'currency': 'eur',
+    #                         'quantity': 2
+    #                         }]
     if preciofinal_1:
         line_items.append({'description': marcaproducto_1,
                             'name': nombreproducto_1,
@@ -128,7 +128,15 @@ def create_share_link():
 @app.route('/create-checkout-session', methods=['POST'])
 def create_checkout_session():
 
-    data = create_line_items(request)
+    if request.data:
+        data = json.loads(request.data)
+    else:
+        data = create_line_items(request)
+
+    line_items = data.pop('line_items', None)
+    for item in line_items:
+        item['amount'] = int(item['amount'])*10
+
     domain_url = os.getenv('DOMAIN')
 
     try:
@@ -145,12 +153,15 @@ def create_checkout_session():
         checkout_session = stripe.checkout.Session.create(
             success_url=domain_url + "/success.html?session_id={CHECKOUT_SESSION_ID}", \
             cancel_url=domain_url + "/canceled.html", \
-            metadata = {'name': data['nombre'], 'protocolo': data['protocolo']}, \
+            line_items=line_items, \
+            metadata=data, \
             payment_method_types=["card"], \
-            line_items=data['line_items'],
-
         )
-        return jsonify({'linkinfo': domain_url + '/checkout-session?sessionId=' + checkout_session['id']})
+        if request.data:
+            return jsonify({'sessionId': checkout_session['id']})
+        else:
+            return jsonify({'linkinfo': domain_url + '/checkout-session?sessionId=' + checkout_session['id']})
+
     except Exception as e:
         return jsonify(error=str(e)), 403
 

@@ -1,6 +1,8 @@
 // The max and min number of photos a customer can purchase
 var MIN_PHOTOS = 1;
 var MAX_PHOTOS = 10;
+var sessionId = '';
+var stripe = null;
 
 var provincias = ['Alava','Albacete','Alicante','Almería','Asturias','Avila','Badajoz','Barcelona','Burgos','Cáceres',
 'Cádiz','Cantabria','Castellón','Ciudad Real','Córdoba','A Coruña','Cuenca','Gerona','Granada','Guadalajara',
@@ -12,9 +14,11 @@ $("#pay-button").text('Pagar €' + total + ' Ahora!');
 
 var validateFields = function() {
   let valid = false;
+  if (!protocolo || !name || !line_items) {
+    alert("No se dispone de la información del Terapeuta, el protocolo o los productos");
+    return;
+  }
   $(".form-control").each(function(e, i) {
-    console.log(e, i.id);
-    console.log($("#" + i.id).val());
     if ($("#" + i.id).val()) {
       $("#" + i.id).addClass('is-valid');
       $("#" + i.id).removeClass('is-invalid');
@@ -27,7 +31,7 @@ var validateFields = function() {
   if (!valid) {
     alert("Por favor completa todos los datos para poder Pagar!")
   } else {
-    createCheckoutSession();
+    createCheckout();
   }
 };
 
@@ -45,9 +49,7 @@ $("#pay-button").click(function () {
 
 
 // Create a Checkout Session with the selected quantity
-var createCheckoutSession = function () {
-  console.log(line_items);
-  return;
+var createCheckout = function () {
   return fetch('/create-checkout-session', {
     method: 'POST',
     headers: {
@@ -55,10 +57,26 @@ var createCheckoutSession = function () {
     },
     body: JSON.stringify({
       line_items: line_items,
+      name: name,
+      protocolo: protocolo,
+      shipping_name: $("#name").val(),
+      shipping_email: $("#email").val(),
+      shipping_phone : $("#phone").val(),
+      shipping_address: $("#address").val(),
+      shipping_city: $("#city").val(),
+      shipping_provincia: $("#select-provincia").val(),
+      shipping_postalcode: $("#postalCode").val(),
     }),
   }).then(function (result) {
     return result.json();
-  });
+  })
+  .then(function (json) {
+    stripe
+      .redirectToCheckout({
+        sessionId: json.sessionId,
+      })
+      .then(handleResult);
+    });
 };
 
 /* Get your Stripe publishable key to initialize Stripe.js */
@@ -68,15 +86,5 @@ fetch('/config')
   })
   .then(function (json) {
     window.config = json;
-    var stripe = Stripe(config.publicKey);
-    // Setup event handler to create a Checkout Session on submit
-    document.querySelector('#submit').addEventListener('click', function (evt) {
-      createCheckoutSession().then(function (data) {
-        stripe
-          .redirectToCheckout({
-            sessionId: data.sessionId,
-          })
-          .then(handleResult);
-      });
-    });
+    stripe = Stripe(config.publicKey);
   });
