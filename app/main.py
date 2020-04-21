@@ -126,7 +126,7 @@ def create_share_link():
 
 
 @app.route("/create-link", methods=['POST'])
-def create_share_link():
+def create_link():
     domain_url = os.getenv('DOMAIN')
     data = create_line_items(request)
     return jsonify({'link_url': domain_url + '?' + data['id']})
