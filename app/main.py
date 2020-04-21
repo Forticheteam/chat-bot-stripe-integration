@@ -7,11 +7,11 @@ from flask import Flask, render_template, request, jsonify
 
 def create_line_items(request):
     # Precios
-    preciofinal1 = request.args.get('preciofinal1', 0)
-    preciofinal2 = request.args.get('preciofinal2', 0)
-    preciofinal3 = request.args.get('preciofinal3', 0)
-    preciofinal4 = request.args.get('preciofinal4', 0)
-    preciofinal5 = request.args.get('preciofinal5', 0)
+    preciofinal1 = float(request.args.get('preciofinal1', 0))
+    preciofinal2 = float(request.args.get('preciofinal2', 0))
+    preciofinal3 = float(request.args.get('preciofinal3', 0))
+    preciofinal4 = float(request.args.get('preciofinal4', 0))
+    preciofinal5 = float(request.args.get('preciofinal5', 0))
     nombreproducto1 = request.args.get('nombreproducto1', '')
     nombreproducto2 = request.args.get('nombreproducto2', '')
     nombreproducto3 = request.args.get('nombreproducto3', '')
@@ -22,12 +22,12 @@ def create_line_items(request):
     marcaproducto3 = request.args.get('marcaproducto3', '')
     marcaproducto4 = request.args.get('marcaproducto4', '')
     marcaproducto5 = request.args.get('marcaproducto5', '')
-    multiplicador1 = request.args.get('multiplicador1', '')
-    multiplicador2 = request.args.get('multiplicador2', '')
-    multiplicador3 = request.args.get('multiplicador3', '')
-    multiplicador4 = request.args.get('multiplicador4', '')
-    multiplicador5 = request.args.get('multiplicador5', '')
-    gastos_envios = request.args.get('gastos_envios', 0)
+    multiplicador1 = int(request.args.get('multiplicador1', 0))
+    multiplicador2 = int(request.args.get('multiplicador2', 0))
+    multiplicador3 = int(request.args.get('multiplicador3', 0))
+    multiplicador4 = int(request.args.get('multiplicador4', 0))
+    multiplicador5 = int(request.args.get('multiplicador5', 0))
+    gastos_envios = float(request.args.get('gastos_envios', 0))
 
     name = request.args.get('nombre_consulta', '')
     protocolo = request.args.get('nombre_protocolo', '')
@@ -92,9 +92,8 @@ def create_line_items(request):
                             'quantity': 1
                             })      
     total = 0
-    total = sum([float(item['amount'])*float(item['quantity']) for item in line_items])
-        
-    return {'name': name, 'protocolo': protocolo, 'line_items': line_items, 'total': total, 'query_string': urlencode(line_items)}
+    total = round(sum([float(item['amount'])*float(item['quantity']) for item in line_items]), 2)
+    return {'name': name, 'protocolo': protocolo, 'line_items': line_items, 'total': total}
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 stripe.api_version = os.getenv('STRIPE_API_VERSION')
@@ -128,8 +127,7 @@ def create_share_link():
 @app.route("/create-link", methods=['POST'])
 def create_link():
     domain_url = os.getenv('DOMAIN')
-    data = create_line_items(request)
-    return jsonify({'link_url': domain_url + '?' + data['id']})
+    return jsonify({'link_url': domain_url + '?' + urlencode(request.args)})
 
 
 @app.route('/create-checkout-session', methods=['POST'])
