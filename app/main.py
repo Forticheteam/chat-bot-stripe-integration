@@ -92,7 +92,7 @@ def create_line_items(request):
                             'quantity': 1
                             })      
     total = 0
-    total = sum([item['amount']*item['quantity'] for item in line_items])
+    total = sum([float(item['amount'])*float(item['quantity']) for item in line_items])
         
     return {'name': name, 'protocolo': protocolo, 'line_items': line_items, 'total': total, 'query_string': urlencode(line_items)}
 
@@ -142,7 +142,7 @@ def create_checkout_session():
 
     line_items = data.pop('line_items', None)
     for item in line_items:
-        item['amount'] = int(item['amount'])*10
+        item['amount'] = int(item['amount']*10)
 
     domain_url = os.getenv('DOMAIN')
 
