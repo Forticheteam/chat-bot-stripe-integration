@@ -1,35 +1,36 @@
 import json
 import stripe
 import os
+from urllib.parse import urlencode
 
 from flask import Flask, render_template, request, jsonify 
 
 def create_line_items(request):
     # Precios
-    preciofinal_1 = request.args.get('preciofinal_1', 0)
-    preciofinal_2 = request.args.get('preciofinal_2', 0)
-    preciofinal_3 = request.args.get('preciofinal_3', 0)
-    preciofinal_4 = request.args.get('preciofinal_4', 0)
-    preciofinal_5 = request.args.get('preciofinal_5', 0)
-    nombreproducto_1 = request.args.get('nombreproducto_1', '')
-    nombreproducto_2 = request.args.get('nombreproducto_2', '')
-    nombreproducto_3 = request.args.get('nombreproducto_3', '')
-    nombreproducto_4 = request.args.get('nombreproducto_4', '')
-    nombreproducto_5 = request.args.get('nombreproducto_5', '')
-    marcaproducto_1 = request.args.get('marcaproducto_1', '')
-    marcaproducto_2 = request.args.get('marcaproducto_2', '')
-    marcaproducto_3 = request.args.get('marcaproducto_3', '')
-    marcaproducto_4 = request.args.get('marcaproducto_4', '')
-    marcaproducto_5 = request.args.get('marcaproducto_5', '')
-    multiplicador_1 = request.args.get('multiplicador_1', '')
-    multiplicador_2 = request.args.get('multiplicador_2', '')
-    multiplicador_3 = request.args.get('multiplicador_3', '')
-    multiplicador_4 = request.args.get('multiplicador_4', '')
-    multiplicador_5 = request.args.get('multiplicador_5', '')
+    preciofinal1 = request.args.get('preciofinal1', 0)
+    preciofinal2 = request.args.get('preciofinal2', 0)
+    preciofinal3 = request.args.get('preciofinal3', 0)
+    preciofinal4 = request.args.get('preciofinal4', 0)
+    preciofinal5 = request.args.get('preciofinal5', 0)
+    nombreproducto1 = request.args.get('nombreproducto1', '')
+    nombreproducto2 = request.args.get('nombreproducto2', '')
+    nombreproducto3 = request.args.get('nombreproducto3', '')
+    nombreproducto4 = request.args.get('nombreproducto4', '')
+    nombreproducto5 = request.args.get('nombreproducto5', '')
+    marcaproducto1 = request.args.get('marcaproducto1', '')
+    marcaproducto2 = request.args.get('marcaproducto2', '')
+    marcaproducto3 = request.args.get('marcaproducto3', '')
+    marcaproducto4 = request.args.get('marcaproducto4', '')
+    marcaproducto5 = request.args.get('marcaproducto5', '')
+    multiplicador1 = request.args.get('multiplicador1', '')
+    multiplicador2 = request.args.get('multiplicador2', '')
+    multiplicador3 = request.args.get('multiplicador3', '')
+    multiplicador4 = request.args.get('multiplicador4', '')
+    multiplicador5 = request.args.get('multiplicador5', '')
     gastos_envios = request.args.get('gastos_envios', 0)
 
-    name = request.args.get('name', '')
-    protocolo = request.args.get('protocolo', '')
+    name = request.args.get('nombre_consulta', '')
+    protocolo = request.args.get('nombre_protocolo', '')
 
     line_items = []
     # line_items = [{'description': "Centrum",
@@ -44,43 +45,43 @@ def create_line_items(request):
     #                         'currency': 'eur',
     #                         'quantity': 2
     #                         }]
-    if preciofinal_1:
-        line_items.append({'description': marcaproducto_1,
-                            'name': nombreproducto_1,
-                            'amount': preciofinal_1,
+    if preciofinal1:
+        line_items.append({'description': marcaproducto1,
+                            'name': nombreproducto1,
+                            'amount': preciofinal1,
                             'currency': 'eur',
-                            'quantity': multiplicador_1
+                            'quantity': multiplicador1
                             })
-    if preciofinal_2:
-        line_items.append({'description': marcaproducto_2,
-                            'name': nombreproducto_2,
-                            'amount': preciofinal_2,
+    if preciofinal2:
+        line_items.append({'description': marcaproducto2,
+                            'name': nombreproducto2,
+                            'amount': preciofinal2,
                             'currency': 'eur',
-                            'quantity': multiplicador_2
+                            'quantity': multiplicador2
                             })
 
-    if preciofinal_3:
-        line_items.append({'description': marcaproducto_3,
-                            'name': nombreproducto_3,
-                            'amount': preciofinal_3,
+    if preciofinal3:
+        line_items.append({'description': marcaproducto3,
+                            'name': nombreproducto3,
+                            'amount': preciofinal3,
                             'currency': 'eur',
-                            'quantity': multiplicador_3
+                            'quantity': multiplicador3
                             })   
 
-    if preciofinal_4:
-        line_items.append({'description': marcaproducto_4,
-                            'name': nombreproducto_4,
-                            'amount': preciofinal_4,
+    if preciofinal4:
+        line_items.append({'description': marcaproducto4,
+                            'name': nombreproducto4,
+                            'amount': preciofinal4,
                             'currency': 'eur',
-                            'quantity': multiplicador_4
+                            'quantity': multiplicador4
                             }) 
 
-    if preciofinal_5:
-        line_items.append({'description': marcaproducto_5,
-                            'name': nombreproducto_5,
-                            'amount': preciofinal_5,
+    if preciofinal5:
+        line_items.append({'description': marcaproducto5,
+                            'name': nombreproducto5,
+                            'amount': preciofinal5,
                             'currency': 'eur',
-                            'quantity': multiplicador_5
+                            'quantity': multiplicador5
                             })
 
     if gastos_envios:
@@ -93,7 +94,7 @@ def create_line_items(request):
     total = 0
     total = sum([item['amount']*item['quantity'] for item in line_items])
         
-    return {'name': name, 'protocolo': protocolo, 'line_items': line_items, 'total': total}
+    return {'name': name, 'protocolo': protocolo, 'line_items': line_items, 'total': total, 'query_string': urlencode(line_items)}
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 stripe.api_version = os.getenv('STRIPE_API_VERSION')
@@ -123,6 +124,13 @@ def get_publishable_key():
 @app.route("/api/echo", methods=['POST'])
 def create_share_link():
     return request.args
+
+
+@app.route("/create-link", methods=['POST'])
+def create_share_link():
+    domain_url = os.getenv('DOMAIN')
+    data = create_line_items(request)
+    return jsonify({'link_info': domain_url + '?' + data['id']})
 
 
 @app.route('/create-checkout-session', methods=['POST'])
@@ -164,6 +172,7 @@ def create_checkout_session():
 
     except Exception as e:
         return jsonify(error=str(e)), 403
+
 
 # Fetch the Checkout Session to display the JSON result on the success page
 @app.route('/checkout-session', methods=['GET'])
