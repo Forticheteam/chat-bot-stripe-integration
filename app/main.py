@@ -105,7 +105,6 @@ app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 @app.route('/')
 def hello():
-
     data = create_line_items(request)
     domain_url = os.getenv('DOMAIN')
     total_lines = len(data['line_items'])
@@ -130,7 +129,7 @@ def create_share_link():
 def create_share_link():
     domain_url = os.getenv('DOMAIN')
     data = create_line_items(request)
-    return jsonify({'link_info': domain_url + '?' + data['id']})
+    return jsonify({'link_url': domain_url + '?' + data['id']})
 
 
 @app.route('/create-checkout-session', methods=['POST'])
