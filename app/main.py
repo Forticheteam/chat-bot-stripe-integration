@@ -5,13 +5,17 @@ from urllib.parse import urlencode
 
 from flask import Flask, render_template, request, jsonify 
 
+def empty_to_zero(value):
+    return 0 if value == '' else value 
+
 def create_line_items(request):
     # Precios
-    preciofinal1 = float(request.args.get('preciofinal1', 0))
-    preciofinal2 = float(request.args.get('preciofinal2', 0))
-    preciofinal3 = float(request.args.get('preciofinal3', 0))
-    preciofinal4 = float(request.args.get('preciofinal4', 0))
-    preciofinal5 = float(request.args.get('preciofinal5', 0))
+
+    preciofinal1 = float(empty_to_zero(request.args.get('preciofinal1', 0)))
+    preciofinal2 = float(empty_to_zero(request.args.get('preciofinal2', 0)))
+    preciofinal3 = float(empty_to_zero(request.args.get('preciofinal3', 0)))
+    preciofinal4 = float(empty_to_zero(request.args.get('preciofinal4', 0)))
+    preciofinal5 = float(empty_to_zero(request.args.get('preciofinal5', 0)))
     nombreproducto1 = request.args.get('nombreproducto1', '')
     nombreproducto2 = request.args.get('nombreproducto2', '')
     nombreproducto3 = request.args.get('nombreproducto3', '')
@@ -22,29 +26,17 @@ def create_line_items(request):
     marcaproducto3 = request.args.get('marcaproducto3', '')
     marcaproducto4 = request.args.get('marcaproducto4', '')
     marcaproducto5 = request.args.get('marcaproducto5', '')
-    multiplicador1 = int(request.args.get('multiplicador1', 0))
-    multiplicador2 = int(request.args.get('multiplicador2', 0))
-    multiplicador3 = int(request.args.get('multiplicador3', 0))
-    multiplicador4 = int(request.args.get('multiplicador4', 0))
-    multiplicador5 = int(request.args.get('multiplicador5', 0))
-    gastos_envios = float(request.args.get('gastos_envios', 0))
-
+    multiplicador1 = int(empty_to_zero(request.args.get('multiplicador1', 0)))
+    multiplicador2 = int(empty_to_zero(request.args.get('multiplicador2', 0)))
+    multiplicador3 = int(empty_to_zero(request.args.get('multiplicador3', 0)))
+    multiplicador4 = int(empty_to_zero(request.args.get('multiplicador4', 0)))
+    multiplicador5 = int(empty_to_zero(request.args.get('multiplicador5', 0)))
+    gastos_envios = float(empty_to_zero(request.args.get('gastos_envios', 0)))
     name = request.args.get('nombre_consulta', '')
     protocolo = request.args.get('nombre_protocolo', '')
 
     line_items = []
-    # line_items = [{'description': "Centrum",
-    #                         'name': "Vitamina C",
-    #                         'amount': 35,
-    #                         'currency': 'eur',
-    #                         'quantity': 2
-    #                         },
-    #                         {'description': "Centrum",
-    #                         'name': "Vitamina C",
-    #                         'amount': 35,
-    #                         'currency': 'eur',
-    #                         'quantity': 2
-    #                         }]
+
     if preciofinal1:
         line_items.append({'description': marcaproducto1,
                             'name': nombreproducto1,
