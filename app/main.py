@@ -29,12 +29,12 @@ def create_line_items(request):
     multiplicador5 = int(empty_to_zero(request.args.get('multiplicador5', 0)))
     gastos_envios = float(empty_to_zero(request.args.get('gastos_envios', 0)))
     precio_final = float(empty_to_zero(request.args.get('precio_final', 0)))
-    preciofinal1 = float(empty_to_zero(request.args.get('preciofinal1', 0)))/multiplicador1 if multiplicador1 else 0
-    preciofinal2 = float(empty_to_zero(request.args.get('preciofinal2', 0)))/multiplicador2 if multiplicador2 else 0
-    preciofinal3 = float(empty_to_zero(request.args.get('preciofinal3', 0)))/multiplicador3 if multiplicador3 else 0
-    preciofinal4 = float(empty_to_zero(request.args.get('preciofinal4', 0)))/multiplicador4 if multiplicador4 else 0
-    preciofinal5 = float(empty_to_zero(request.args.get('preciofinal5', 0)))/multiplicador5 if multiplicador5 else 0
-    
+    preciofinal1 = round(float(empty_to_zero(request.args.get('preciofinal1', 0)))/multiplicador1, 2) if multiplicador1 else 0
+    preciofinal2 = round(float(empty_to_zero(request.args.get('preciofinal2', 0)))/multiplicador2, 2) if multiplicador2 else 0
+    preciofinal3 = round(float(empty_to_zero(request.args.get('preciofinal3', 0)))/multiplicador3, 2) if multiplicador3 else 0
+    preciofinal4 = round(float(empty_to_zero(request.args.get('preciofinal4', 0)))/multiplicador4, 2) if multiplicador4 else 0
+    preciofinal5 = round(float(empty_to_zero(request.args.get('preciofinal5', 0)))/multiplicador5, 2) if multiplicador5 else 0
+
     name = request.args.get('nombre_consulta', '')
     protocolo = request.args.get('nombre_protocolo', '')
 
