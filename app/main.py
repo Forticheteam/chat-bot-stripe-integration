@@ -32,6 +32,8 @@ def create_line_items(request):
     multiplicador4 = int(empty_to_zero(request.args.get('multiplicador4', 0)))
     multiplicador5 = int(empty_to_zero(request.args.get('multiplicador5', 0)))
     gastos_envios = float(empty_to_zero(request.args.get('gastos_envios', 0)))
+    precio_final = float(empty_to_zero(request.args.get('precio_final', 0)))
+
     name = request.args.get('nombre_consulta', '')
     protocolo = request.args.get('nombre_protocolo', '')
 
@@ -83,8 +85,10 @@ def create_line_items(request):
                             'currency': 'eur',
                             'quantity': 1
                             })      
-    total = 0
-    total = round(sum([float(item['amount'])*float(item['quantity']) for item in line_items]), 2)
+    if precio_final:
+        total = round(precio_final, 2)
+
+    #total = round(sum([float(item['amount'])*float(item['quantity']) for item in line_items]), 2)
     return {'name': name, 'protocolo': protocolo, 'line_items': line_items, 'total': total}
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
