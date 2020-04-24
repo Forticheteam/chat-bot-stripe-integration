@@ -108,7 +108,7 @@ def hello():
     return render_template('index.html', **locals())
 
 @app.route('/success')
-def hello():
+def success():
     return render_template('success.html', **locals())
 
 
