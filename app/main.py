@@ -136,7 +136,7 @@ def create_checkout_session():
 
     line_items = data.pop('line_items', None)
     for item in line_items:
-        item['amount'] = float(item['amount']*10)
+        item['amount'] = int(item['amount']*100)
 
     domain_url = os.getenv('DOMAIN')
 
