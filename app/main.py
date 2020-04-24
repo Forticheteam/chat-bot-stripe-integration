@@ -107,6 +107,11 @@ def hello():
 
     return render_template('index.html', **locals())
 
+@app.route('/success')
+def hello():
+    return render_template('success.html', **locals())
+
+
 @app.route('/config', methods=['GET'])
 def get_publishable_key():
     return jsonify({
@@ -153,7 +158,7 @@ def create_checkout_session():
         # ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
 
         checkout_session = stripe.checkout.Session.create(
-            success_url=domain_url + "/success.html?session_id={CHECKOUT_SESSION_ID}", \
+            success_url=domain_url + "/success?session_id={CHECKOUT_SESSION_ID}", \
             cancel_url=domain_url + "/canceled.html", \
             line_items=line_items, \
             metadata=data, \
