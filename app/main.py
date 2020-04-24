@@ -87,7 +87,7 @@ def create_line_items(request):
                             'quantity': 1
                             })      
     if precio_final:
-        total = round(precio_final+gastos_envios, 2) if gastos_envios else round(precio_final)
+        total = round(precio_final+gastos_envios, 2) if gastos_envios else round(precio_final, 2)
 
     #total = round(sum([float(item['amount'])*float(item['quantity']) for item in line_items]), 2)
     return {'name': name, 'protocolo': protocolo, 'line_items': line_items, 'total': total}
