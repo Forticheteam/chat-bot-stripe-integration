@@ -28,7 +28,7 @@ def create_line_items(request):
     multiplicador4 = int(empty_to_zero(request.args.get('multiplicador4', 0)))
     multiplicador5 = int(empty_to_zero(request.args.get('multiplicador5', 0)))
     gastos_envios = float(empty_to_zero(request.args.get('gastos_envios', 0)))
-    precio_final = float(empty_to_zero(request.args.get('precio_final', 0)))
+    precio_final = float(empty_to_zero(request.args.get('preciofinal', 0)))
     preciofinal1 = round(float(empty_to_zero(request.args.get('preciofinal1', 0)))/multiplicador1, 2) if multiplicador1 else 0
     preciofinal2 = round(float(empty_to_zero(request.args.get('preciofinal2', 0)))/multiplicador2, 2) if multiplicador2 else 0
     preciofinal3 = round(float(empty_to_zero(request.args.get('preciofinal3', 0)))/multiplicador3, 2) if multiplicador3 else 0
