@@ -28,3 +28,4 @@ urllib3==1.25.8
 uWSGI==2.0.18
 wcwidth==0.1.8
 Werkzeug==1.0.0
+airtable-python-wrapper==0.13.0

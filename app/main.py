@@ -1,9 +1,10 @@
 import json
 import stripe
 import os
-from urllib.parse import urlencode
+from urllib.parse import urlencode, parse_qsl
 
 from flask import Flask, render_template, request, jsonify 
+from airtable import Airtable
 
 def empty_to_zero(value):
     return 0 if value == '' else value 
@@ -11,34 +12,64 @@ def empty_to_zero(value):
 def create_line_items(request):
     # Precios
 
+    if request.get('args', None):
 
-    nombreproducto1 = request.args.get('nombreproducto1', '')
-    nombreproducto2 = request.args.get('nombreproducto2', '')
-    nombreproducto3 = request.args.get('nombreproducto3', '')
-    nombreproducto4 = request.args.get('nombreproducto4', '')
-    nombreproducto5 = request.args.get('nombreproducto5', '')
-    marcaproducto1 = request.args.get('marcaproducto1', '')
-    marcaproducto2 = request.args.get('marcaproducto2', '')
-    marcaproducto3 = request.args.get('marcaproducto3', '')
-    marcaproducto4 = request.args.get('marcaproducto4', '')
-    marcaproducto5 = request.args.get('marcaproducto5', '')
-    multiplicador1 = int(empty_to_zero(request.args.get('multiplicador1', 0)))
-    multiplicador2 = int(empty_to_zero(request.args.get('multiplicador2', 0)))
-    multiplicador3 = int(empty_to_zero(request.args.get('multiplicador3', 0)))
-    multiplicador4 = int(empty_to_zero(request.args.get('multiplicador4', 0)))
-    multiplicador5 = int(empty_to_zero(request.args.get('multiplicador5', 0)))
-    gastos_envios = float(empty_to_zero(request.args.get('gastos_envios', 0)))
-    precio_final = float(empty_to_zero(request.args.get('preciofinal', 0)))
-    preciofinal1 = round(float(empty_to_zero(request.args.get('preciofinal1', 0)))/multiplicador1, 2) if multiplicador1 else 0
-    preciofinal2 = round(float(empty_to_zero(request.args.get('preciofinal2', 0)))/multiplicador2, 2) if multiplicador2 else 0
-    preciofinal3 = round(float(empty_to_zero(request.args.get('preciofinal3', 0)))/multiplicador3, 2) if multiplicador3 else 0
-    preciofinal4 = round(float(empty_to_zero(request.args.get('preciofinal4', 0)))/multiplicador4, 2) if multiplicador4 else 0
-    preciofinal5 = round(float(empty_to_zero(request.args.get('preciofinal5', 0)))/multiplicador5, 2) if multiplicador5 else 0
+        nombreproducto1 = request.args.get('nombreproducto1', '')
+        nombreproducto2 = request.args.get('nombreproducto2', '')
+        nombreproducto3 = request.args.get('nombreproducto3', '')
+        nombreproducto4 = request.args.get('nombreproducto4', '')
+        nombreproducto5 = request.args.get('nombreproducto5', '')
+        marcaproducto1 = request.args.get('marcaproducto1', '')
+        marcaproducto2 = request.args.get('marcaproducto2', '')
+        marcaproducto3 = request.args.get('marcaproducto3', '')
+        marcaproducto4 = request.args.get('marcaproducto4', '')
+        marcaproducto5 = request.args.get('marcaproducto5', '')
+        multiplicador1 = int(empty_to_zero(request.args.get('multiplicador1', 0)))
+        multiplicador2 = int(empty_to_zero(request.args.get('multiplicador2', 0)))
+        multiplicador3 = int(empty_to_zero(request.args.get('multiplicador3', 0)))
+        multiplicador4 = int(empty_to_zero(request.args.get('multiplicador4', 0)))
+        multiplicador5 = int(empty_to_zero(request.args.get('multiplicador5', 0)))
+        gastos_envios = float(empty_to_zero(request.args.get('gastos_envios', 0)))
+        precio_final = float(empty_to_zero(request.args.get('preciofinal', 0)))
+        preciofinal1 = round(float(empty_to_zero(request.args.get('preciofinal1', 0)))/multiplicador1, 2) if multiplicador1 else 0
+        preciofinal2 = round(float(empty_to_zero(request.args.get('preciofinal2', 0)))/multiplicador2, 2) if multiplicador2 else 0
+        preciofinal3 = round(float(empty_to_zero(request.args.get('preciofinal3', 0)))/multiplicador3, 2) if multiplicador3 else 0
+        preciofinal4 = round(float(empty_to_zero(request.args.get('preciofinal4', 0)))/multiplicador4, 2) if multiplicador4 else 0
+        preciofinal5 = round(float(empty_to_zero(request.args.get('preciofinal5', 0)))/multiplicador5, 2) if multiplicador5 else 0
 
-    name = request.args.get('nombre_consulta', '')
-    protocolo = request.args.get('nombre_protocolo', '')
+        name = request.args.get('nombre_consulta', '')
+        protocolo = request.args.get('nombre_protocolo', '')
+
+    else:
+
+        nombreproducto1 = request.get('nombreproducto1', '')
+        nombreproducto2 = request.get('nombreproducto2', '')
+        nombreproducto3 = request.get('nombreproducto3', '')
+        nombreproducto4 = request.get('nombreproducto4', '')
+        nombreproducto5 = request.get('nombreproducto5', '')
+        marcaproducto1 = request.get('marcaproducto1', '')
+        marcaproducto2 = request.get('marcaproducto2', '')
+        marcaproducto3 = request.get('marcaproducto3', '')
+        marcaproducto4 = request.get('marcaproducto4', '')
+        marcaproducto5 = request.get('marcaproducto5', '')
+        multiplicador1 = int(empty_to_zero(request.get('multiplicador1', 0)))
+        multiplicador2 = int(empty_to_zero(request.get('multiplicador2', 0)))
+        multiplicador3 = int(empty_to_zero(request.get('multiplicador3', 0)))
+        multiplicador4 = int(empty_to_zero(request.get('multiplicador4', 0)))
+        multiplicador5 = int(empty_to_zero(request.get('multiplicador5', 0)))
+        gastos_envios = float(empty_to_zero(request.get('gastos_envios', 0)))
+        precio_final = float(empty_to_zero(request.get('preciofinal', 0)))
+        preciofinal1 = round(float(empty_to_zero(request.get('preciofinal1', 0)))/multiplicador1, 2) if multiplicador1 else 0
+        preciofinal2 = round(float(empty_to_zero(request.get('preciofinal2', 0)))/multiplicador2, 2) if multiplicador2 else 0
+        preciofinal3 = round(float(empty_to_zero(request.get('preciofinal3', 0)))/multiplicador3, 2) if multiplicador3 else 0
+        preciofinal4 = round(float(empty_to_zero(request.get('preciofinal4', 0)))/multiplicador4, 2) if multiplicador4 else 0
+        preciofinal5 = round(float(empty_to_zero(request.get('preciofinal5', 0)))/multiplicador5, 2) if multiplicador5 else 0
+
+        name = request.get('nombre_consulta', '')
+        protocolo = request.get('nombre_protocolo', '')
 
     line_items = []
+    total = 0
 
     if preciofinal1:
         line_items.append({'description': marcaproducto1,
@@ -100,10 +131,30 @@ app = Flask(__name__, static_folder=static_dir, template_folder=static_dir)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 @app.route('/')
-def hello():
-    data = create_line_items(request)
+@app.route('/<string:short_url>')
+@app.route('/<string:short_url>/')
+def hello(short_url=None):
+    
     domain_url = os.getenv('DOMAIN')
-    total_lines = len(data['line_items'])
+
+    if not short_url:
+        # data = create_line_items(request)
+        # total_lines = len(data['line_items'])
+        return render_template('success.html', **locals())
+    else: 
+        try:
+            air_base = os.getenv('AIR_TABLE_BASE')
+            air_api_key = os.getenv('AIR_TABLE_API')
+            air_table_name = os.getenv('AIR_PROTOCOLO_TABLE_NAME')
+            at = Airtable(air_base, air_table_name, api_key=air_api_key)
+            lookup_record = at.search('short_url', short_url)
+            text_qs = lookup_record[0]['fields']['query_string']
+            dict_qs = dict(parse_qsl(text_qs))
+            data = create_line_items(dict_qs)
+            total_lines = len(data['line_items'])
+
+        except Exception as e:
+            return jsonify(error=str(e)), 403
 
     return render_template('index.html', **locals())
 
@@ -129,7 +180,22 @@ def create_share_link():
 @app.route("/create-link", methods=['POST'])
 def create_link():
     domain_url = os.getenv('DOMAIN')
-    return jsonify({'link_url': domain_url + '?' + urlencode(request.args)})
+    air_base = os.getenv('AIR_TABLE_BASE')
+    air_api_key = os.getenv('AIR_TABLE_API')
+    air_table_name = os.getenv('AIR_PROTOCOLO_TABLE_NAME')
+
+    try:
+        at = Airtable(air_base, air_table_name, api_key=air_api_key)
+        new_record_content = dict(request.args)
+        new_record_content['query_string'] = urlencode(request.args)
+        new_record = at.insert(new_record_content)
+        short_url = {'short_url': new_record['id'].split('rec')[1],
+             'airtableID': new_record['id']}
+        at.update(new_record['id'], short_url)
+
+        return jsonify({'link_url': domain_url + '/' + short_url['short_url']})
+    except Exception as e:
+        return jsonify(error=str(e)), 403
 
 
 @app.route('/create-checkout-session', methods=['POST'])
