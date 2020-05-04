@@ -149,9 +149,13 @@ def hello(short_url=None):
             at = Airtable(air_base, air_table_name, api_key=air_api_key)
             lookup_record = at.search('short_url', short_url)
             text_qs = lookup_record[0]['fields']['query_string']
+            visits = int(lookup_record[0]['fields']['visits']) + 1 if lookup_record[0]['fields']['visits'] >= 0 else 0
             dict_qs = dict(parse_qsl(text_qs))
             data = create_line_items(dict_qs)
             total_lines = len(data['line_items'])
+            view_counter = {'visits': visits}
+            at.update(lookup_record[0]['id'], view_counter)
+
 
         except Exception as e:
             return jsonify(error=str(e)), 403
