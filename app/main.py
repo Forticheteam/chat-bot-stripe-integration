@@ -155,7 +155,11 @@ def hello(short_url=None):
             total_lines = len(data['line_items'])
             view_counter = {'visits': visits}
             at.update(lookup_record[0]['id'], view_counter)
-
+            if 'imagen_protocolo' in lookup_record[0]['fields']:
+                images = [image['url'] for image in lookup_record[0]['fields']['imagen_protocolo']]
+                images = images[:3]
+            else:
+                images = []
 
         except Exception as e:
             return jsonify(error=str(e)), 403
@@ -194,7 +198,7 @@ def create_link():
         new_record_content['query_string'] = urlencode(request.args)
         new_record = at.insert(new_record_content)
         short_url = {'short_url': new_record['id'].split('rec')[1],
-             'airtableID': new_record['id']}
+             'airtableID': new_record['id'], 'visits': 0}
         at.update(new_record['id'], short_url)
 
         return jsonify({'link_url': domain_url + '/' + short_url['short_url']})
