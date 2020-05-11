@@ -6,6 +6,11 @@ from urllib.parse import urlencode, parse_qsl
 from flask import Flask, render_template, request, jsonify 
 from airtable import Airtable
 
+def WIP():
+    stripe.checkout.Session.retrieve("cs_test_ry42RsLk5edh8ljZy5hitVAOp7h1oCTwBHZNOjYAjKstZsWIcHOFSxPd")
+    stripe.PaymentIntent.retrieve("pi_1GhVE0F357pS3cuoV8hZ3J6R")
+
+
 def empty_to_zero(value):
     return 0 if value == '' else value 
 
@@ -168,6 +173,20 @@ def hello(short_url=None):
 
 @app.route('/success')
 def success():
+
+    air_base = os.getenv('AIR_TABLE_BASE')
+    air_api_key = os.getenv('AIR_TABLE_API')
+    air_table_name = os.getenv('AIR_PEDIDOS_TABLE_NAME') 
+    at = Airtable(air_base, air_table_name, api_key=air_api_key)
+
+    session_id = request.args.get('session_id', '')
+    session = stripe.checkout.Session.retrieve(session_id)
+    payment = stripe.PaymentIntent.retrieve(session['payment_intent'])
+
+    at.update_by_field('stripe_session_id', session_id, {'stripe_payment_id': payment['id']})
+    at.update_by_field('stripe_session_id', session_id, {'status': payment['status']})
+    at.update_by_field('stripe_session_id', session_id, {'paid_amount': payment['amount']/100})
+
     return render_template('success.html', **locals())
 
 
@@ -219,7 +238,6 @@ def create_checkout_session():
         item['amount'] = int(item['amount']*100)
 
     domain_url = os.getenv('DOMAIN')
-
     try:
         # Create new Checkout Session for the order
         # Other optional params include:
@@ -239,6 +257,24 @@ def create_checkout_session():
             payment_method_types=["card"], \
         )
         if request.data:
+            air_base = os.getenv('AIR_TABLE_BASE')
+            air_api_key = os.getenv('AIR_TABLE_API')
+            air_table_name = os.getenv('AIR_PEDIDOS_TABLE_NAME') 
+            at = Airtable(air_base, air_table_name, api_key=air_api_key) 
+
+            new_record_content = dict(protocolo=["rec" + data['protocolo_id']], 
+                                      shipping_name=data['shipping_name'],
+                                      shipping_email=data['shipping_email'],
+                                      shipping_phone=data['shipping_phone'],
+                                      shipping_address=data['shipping_address'],
+                                      shipping_city=data['shipping_city'],
+                                      shipping_provincia=data['shipping_provincia'],
+                                      shipping_postalcode=data['shipping_postalcode'],
+                                      status='unpaid',
+                                      stripe_session_id=checkout_session['id'],
+                                      )
+            new_record = at.insert(new_record_content)
+
             return jsonify({'sessionId': checkout_session['id']})
         else:
             return jsonify({'linkinfo': domain_url + '/checkout-session?sessionId=' + checkout_session['id']})

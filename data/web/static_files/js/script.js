@@ -66,6 +66,7 @@ var createCheckout = function () {
       shipping_city: $("#city").val(),
       shipping_provincia: $("#select-provincia").val(),
       shipping_postalcode: $("#postalCode").val(),
+      protocolo_id: $("#protocoloId").val(),
     }),
   }).then(function (result) {
     return result.json();
