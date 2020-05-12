@@ -170,7 +170,7 @@ def hello(short_url=None):
             return jsonify(error=str(e)), 403
 
     return render_template('index.html', **locals())
-
+ 
 @app.route('/success')
 def success():
 
