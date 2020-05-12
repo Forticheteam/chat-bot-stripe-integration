@@ -274,6 +274,7 @@ def create_checkout_session():
                                       stripe_session_id=checkout_session['id'],
                                       )
             new_record = at.insert(new_record_content)
+            at.update(new_record['id'], {'airtableID': new_record['id'] })
 
             return jsonify({'sessionId': checkout_session['id']})
         else:
