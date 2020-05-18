@@ -3,13 +3,10 @@ import stripe
 import os
 from urllib.parse import urlencode, parse_qsl
 
+from threading import Thread
 from flask import Flask, render_template, request, jsonify 
+from flask_mail import Mail, Message
 from airtable import Airtable
-
-def WIP():
-    stripe.checkout.Session.retrieve("cs_test_ry42RsLk5edh8ljZy5hitVAOp7h1oCTwBHZNOjYAjKstZsWIcHOFSxPd")
-    stripe.PaymentIntent.retrieve("pi_1GhVE0F357pS3cuoV8hZ3J6R")
-
 
 def empty_to_zero(value):
     return 0 if value == '' else value 
@@ -42,6 +39,7 @@ def create_line_items(request):
         preciofinal4 = round(float(empty_to_zero(request.args.get('preciofinal4', 0)))/multiplicador4, 2) if multiplicador4 else 0
         preciofinal5 = round(float(empty_to_zero(request.args.get('preciofinal5', 0)))/multiplicador5, 2) if multiplicador5 else 0
         comisionesfinal = float(empty_to_zero(request.args.get('comisionesfinal', 0)))
+        modo_empleo = request.args.get('modo_empleo', '')
 
         name = request.args.get('nombre_consulta', '')
         protocolo = request.args.get('nombre_protocolo', '')
@@ -66,6 +64,7 @@ def create_line_items(request):
         gastos_envios = float(empty_to_zero(request.get('gastos_envios', 0)))
         precio_final = float(empty_to_zero(request.get('preciofinal', 0)))
         comisionesfinal = float(empty_to_zero(request.get('comisionesfinal', 0)))
+        modo_empleo = request.get('modo_empleo', '')
         preciofinal1 = round(float(empty_to_zero(request.get('preciofinal1', 0)))/multiplicador1, 2) if multiplicador1 else 0
         preciofinal2 = round(float(empty_to_zero(request.get('preciofinal2', 0)))/multiplicador2, 2) if multiplicador2 else 0
         preciofinal3 = round(float(empty_to_zero(request.get('preciofinal3', 0)))/multiplicador3, 2) if multiplicador3 else 0
@@ -135,7 +134,30 @@ stripe.api_version = os.getenv('STRIPE_API_VERSION')
 
 static_dir = str(os.path.abspath(os.path.join(__file__, "..", "./staticfiles/templates")))
 app = Flask(__name__, static_folder=static_dir, template_folder=static_dir)
+
 app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.config['MAIL_SERVER'] = os.getenv('EMAIL_SMTP')
+app.config['MAIL_PORT'] = os.getenv('EMAIL_PORT')
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER')  # enter your username here
+app.config['MAIL_DEFAULT_SENDER'] = 'info@prescriptvm.com' # enter your email here
+app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASSWORD') # enter your password here
+
+mail = Mail(app)
+
+def async_send_mail(app, msg):
+    with app.app_context():
+        mail.send(msg)
+ 
+ 
+def send_mail(subject, recipient, template, **kwargs):
+    msg = Message(subject, sender=app.config['MAIL_DEFAULT_SENDER'], recipients=[recipient], bcc=['eric.mazataud@gmail.com'])
+    msg.html = render_template(template, **kwargs)
+    thr = Thread(target=async_send_mail, args=[app, msg])
+    thr.start()
+    return thr
+
 
 @app.route('/')
 @app.route('/<string:short_url>')
@@ -181,6 +203,8 @@ def success():
     air_table_name = os.getenv('AIR_PEDIDOS_TABLE_NAME') 
     at = Airtable(air_base, air_table_name, api_key=air_api_key)
 
+    at_prot = Airtable(air_base, os.getenv('AIR_PROTOCOLO_TABLE_NAME'), api_key=air_api_key)
+
     session_id = request.args.get('session_id', '')
     session = stripe.checkout.Session.retrieve(session_id)
     payment = stripe.PaymentIntent.retrieve(session['payment_intent'])
@@ -188,6 +212,25 @@ def success():
     at.update_by_field('stripe_session_id', session_id, {'stripe_payment_id': payment['id']})
     at.update_by_field('stripe_session_id', session_id, {'status': payment['status']})
     at.update_by_field('stripe_session_id', session_id, {'paid_amount': payment['amount']/100})
+
+    pedido = at.search('stripe_session_id', session_id)[0]['fields']
+    protocolo = at_prot.get(pedido['protocolo'][0])['fields']
+
+    email = {'nombre_consulta': protocolo['nombre_consulta'],
+             'nombre_protocolo': protocolo['nombre_protocolo'],
+             'shipping_name': pedido['shipping_name'],
+             'shipping_email': pedido['shipping_email'],
+             'shipping_phone': pedido['shipping_phone'],
+             'preciofinal': protocolo['preciofinal'],
+             'comisionesfinal': protocolo['comisionesfinal'],
+             'modo_empleo': protocolo['modo_empleo'] if protocolo['modo_empleo'] else ''
+             }
+
+    email_login = protocolo['email_login']
+
+    subject = 'Tienes una nueva venta de tu protocolo {}'.format(email['nombre_protocolo'])
+
+    send_mail(subject, email_login, 'email.html', **email)
 
     return render_template('success.html', **locals())
 
