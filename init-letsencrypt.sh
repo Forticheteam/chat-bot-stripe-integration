@@ -5,7 +5,7 @@ if ! [ -x "$(command -v docker-compose)" ]; then
   exit 1
 fi
 
-domains=(prescriptvm.com www.prescriptvm.com pagos.prescriptvm.com)
+domains=(pagos.prescriptvm.com)
 rsa_key_size=4096
 data_path="./data/certbot"
 email="jfgonzalezm@gmail.com" # Adding a valid address is strongly recommended
