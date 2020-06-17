@@ -258,8 +258,8 @@ def create_link():
 
     try:
         at = Airtable(air_base, air_table_name, api_key=air_api_key)
-        new_record_content = dict(request.args)
-        new_record_content['query_string'] = urlencode(request.args)
+        new_record_content = dict(request.args) if getattr(request, 'args') else dict(request.form)
+        new_record_content['query_string'] = urlencode(request.args) if getattr(request, 'args') else urlencode(request.form)
         new_record = at.insert(new_record_content)
         short_url = {'short_url': new_record['id'].split('rec')[1],
              'airtableID': new_record['id'], 'visits': 0}
