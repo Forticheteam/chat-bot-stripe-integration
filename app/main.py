@@ -267,6 +267,8 @@ def create_link():
             del new_record_content['date_created']
         if 'date_modified' in new_record_content:
             del new_record_content['date_modified']
+        if 'id' in new_record_content:
+            del new_record_content['id']
 
         new_record = at.insert(new_record_content)
         short_url = {'short_url': new_record['id'].split('rec')[1],
