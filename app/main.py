@@ -7,6 +7,7 @@ from threading import Thread
 from flask import Flask, render_template, request, jsonify 
 from flask_mail import Mail, Message
 from airtable import Airtable
+import requests
 
 def empty_to_zero(value):
     return 0 if value == '' else value 
@@ -150,7 +151,11 @@ def async_send_mail(app, msg):
     with app.app_context():
         mail.send(msg)
  
- 
+def async_send_sms(app, msg):
+    token = os.getenv('ACUMBA_SMS_API')
+    with app.app_context():
+        requests.request("POST", "https://acumbamail.com/api/1/sendSMS/?auth_token={}&messages={}".format(token, msg)) 
+
 def send_mail(subject, recipient, template, **kwargs):
     msg = Message(subject, sender=app.config['MAIL_DEFAULT_SENDER'], recipients=[recipient], bcc=['eric.mazataud@gmail.com'])
     msg.html = render_template(template, **kwargs)
@@ -158,6 +163,11 @@ def send_mail(subject, recipient, template, **kwargs):
     thr.start()
     return thr
 
+def send_sms(recipient, body, sender):
+    msg = [{"recipient": recipient, "body": body, "sender": sender}]
+    thr = Thread(target=async_send_sms, args=[app, msg])
+    thr.start()
+    return thr
 
 @app.route('/')
 @app.route('/<string:short_url>')
@@ -276,6 +286,21 @@ def create_link():
         at.update(new_record['id'], short_url)
 
         return jsonify({'link_url': domain_url + '/' + short_url['short_url']})
+    except Exception as e:
+        return jsonify(error=str(e)), 403
+
+@app.route('/comparte-gana-sms', methods=['POST'])
+def comparte_gana_sms():
+
+    domain_url = os.getenv('DOMAIN')
+    air_base = os.getenv('AIR_TABLE_BASE')
+    air_api_key = os.getenv('AIR_TABLE_API')
+    air_table_name = 'Comparte y Gana - SMS'
+    try:
+        at = Airtable(air_base, air_table_name, api_key=air_api_key)
+        return request.args
+
+
     except Exception as e:
         return jsonify(error=str(e)), 403
 

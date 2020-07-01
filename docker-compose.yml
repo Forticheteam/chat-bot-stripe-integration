@@ -21,6 +21,7 @@ services:
       - EMAIL_PORT=${EMAIL_PORT}
       - EMAIL_USER=${EMAIL_USER}
       - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - ACUMBA_SMS_API=${ACUMBA_SMS_API}
 
     # depends_on:
     #   - db
