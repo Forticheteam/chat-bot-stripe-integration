@@ -164,7 +164,9 @@ def send_mail(subject, recipient, template, **kwargs):
     return thr
 
 def send_sms(recipient, body, sender):
-    msg = [{"recipient": recipient, "body": body, "sender": sender}]
+
+    msg = [{'recipient': recipient, 'body': body, 'sender': sender}]
+    msg = json.dumps(msg)
     thr = Thread(target=async_send_sms, args=[app, msg])
     thr.start()
     return thr
@@ -289,17 +291,43 @@ def create_link():
     except Exception as e:
         return jsonify(error=str(e)), 403
 
-@app.route('/comparte-gana-sms', methods=['POST'])
+@app.route('/comparte-gana-sms/', methods=['POST'])
 def comparte_gana_sms():
-
     domain_url = os.getenv('DOMAIN')
     air_base = os.getenv('AIR_TABLE_BASE')
     air_api_key = os.getenv('AIR_TABLE_API')
-    air_table_name = 'Comparte y Gana - SMS'
+    air_table_name = os.getenv('AIR_PROTOCOLO_TABLE_NAME')
     try:
-        at = Airtable(air_base, air_table_name, api_key=air_api_key)
-        return request.args
+        #at = Airtable(air_base, air_table_name, api_key=air_api_key)
+        email = request.form.get('Email')
+        iban = request.form.get('IBAN')
+        name = request.form.get('Name')
+        codigo_pais_movil = request.form.get('Código País')
+        movil = request.form.get('Número de Teléfono Móvil')
+        protocolo = request.form.get('Protocolo')[2:-2]
 
+        at = Airtable(air_base, air_table_name, api_key=air_api_key)
+        lookup_record = at.search('airtableID', protocolo)
+
+        del lookup_record[0]['fields']['imagen_protocolo']
+        del lookup_record[0]['fields']['date_created']
+        del lookup_record[0]['fields']['date_modified']
+        del lookup_record[0]['fields']['pedidos_pagados_clientes']
+        del lookup_record[0]['fields']['airtableID']
+        del lookup_record[0]['fields']['short_url']
+
+        base_encoded_email = urlencode({"email_login": lookup_record[0]['fields']['email_login']})
+        lookup_record[0]['fields']['email_login'] = email
+        lookup_record[0]['fields']['query_string'] = lookup_record[0]['fields']['query_string'].replace(base_encoded_email, urlencode({"email_login": email}))
+        new_record = at.insert(lookup_record[0]['fields'])
+        short_url = {'short_url': new_record['id'].split('rec')[1],
+             'airtableID': new_record['id'], 'visits': 0}
+        at.update(new_record['id'], short_url)
+
+        mensaje = "Este es tu link para compartir el protocolo {} de Prescriptum: {}/{}/".format(lookup_record[0]['fields']['nombre_protocolo'], domain_url, short_url['short_url'])
+        send_sms(codigo_pais_movil+movil, mensaje, "Prescriptum")
+
+        return request.args
 
     except Exception as e:
         return jsonify(error=str(e)), 403
