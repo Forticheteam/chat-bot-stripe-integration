@@ -309,10 +309,15 @@ def comparte_gana_sms():
         at = Airtable(air_base, air_table_name, api_key=air_api_key)
         lookup_record = at.search('airtableID', protocolo)
 
-        del lookup_record[0]['fields']['imagen_protocolo']
+        if 'imagen_protocolo' in lookup_record[0]['fields']:
+            del lookup_record[0]['fields']['imagen_protocolo']
+
         del lookup_record[0]['fields']['date_created']
         del lookup_record[0]['fields']['date_modified']
-        del lookup_record[0]['fields']['pedidos_pagados_clientes']
+
+        if 'pedidos_pagados_clientes' in lookup_record[0]['fields']:
+            del lookup_record[0]['fields']['pedidos_pagados_clientes']
+        
         del lookup_record[0]['fields']['airtableID']
         del lookup_record[0]['fields']['short_url']
 
